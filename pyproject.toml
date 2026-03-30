@@ -1,0 +1,40 @@
+[project]
+name = "sorlc"
+version = "0.1.0"
+description = "Scaling OpenEnv RL in Chess"
+readme = "README.md"
+requires-python = ">=3.13"
+
+[project.optional-dependencies]
+# core chess logic and agent
+chess = ["python-chess"]
+
+# OpenEnv integration
+openenv = [
+    "openenv-core",
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+    "pydantic>=2.0.0",
+    "websockets>=12.0"
+]
+
+# orchestration
+orchestration = [
+    "docker>=7.0.0",
+    "kubernetes>=29.0.0"
+]
+
+# Everything — inlined to avoid self-referential install issues
+all = [
+    "python-chess>=1.10.0",
+    "openenv-core",
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+    "pydantic>=2.0.0",
+    "websockets>=12.0",
+    "docker>=7.0.0",
+    "kubernetes>=29.0.0"
+]
+
+# Development tooling
+dev = ["pytest", "pytest-asyncio", "black", "ruff"]
