@@ -66,6 +66,9 @@ class ChessEnv(BaseEnv):
             }
         )
     
+    def get_state(self) -> ChessObservation:
+        return self._observe()
+    
     def _observe(self) -> ChessObservation:
         return ChessObservation(
             fen=self._board.fen,

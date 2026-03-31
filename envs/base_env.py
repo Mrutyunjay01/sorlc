@@ -27,3 +27,8 @@ class BaseEnv(ABC):
     @abstractmethod
     def reset(self, **kwargs):
         pass
+
+    @abstractmethod
+    def get_state(self) -> BaseObservation:
+        """ get state of the environment (align with open-env specs) """
+        ...
