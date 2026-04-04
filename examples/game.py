@@ -23,15 +23,14 @@ def play_game(
     while True:
         agent = white if obs.turn == "white" else black
         action = agent.select_action(obs)
-        result = env.step(action=action)
+        obs = env.step(action=action)
         moves.append(action.move_uci)
 
-        if result.is_terminal:
+        if obs.done:
             break
-        obs = result.observation
 
     duration = time.time() - start
-    outcome_str = result.meta_info["outcome"]
+    outcome_str = obs.meta_info["outcome"]
     winner = (
         "white" if "White wins" in outcome_str else
         "black" if "Black wins" in outcome_str else

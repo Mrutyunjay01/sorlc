@@ -4,9 +4,10 @@ Idea is to learn the intuitions and built instinct for scaling RL. After procast
 
 ## Rough plan
 
-- [ ] chess engine with player
-- [ ] basic rl agent to play and improve (min-max, or something)
-- [ ] think about abstraction here: engine as server environment, rl agent as client
+- [x] chess engine with player
+- [x] basic rl agent to play and improve (min-max, or something)
+- [x] think about abstraction here: engine as server environment, rl agent as client
 - [ ] move to open-env
+- [ ] might want to merge `StepResult` with `Observation`, and introduce `State` -> to align with classical RL paradigm.
 - [ ] scale open-env from one client-server to multiple to run and evaluate multiple strategies
 - [ ] automate scaling (spawning) servers as a k8s task (like kubernete meets open-env, not sure if this has been attempted yet from open-env context at all, can do a search and confirm)

@@ -24,13 +24,13 @@ def _alpha_beta(
         best = -float("inf")
         for move in obs.legal_moves:
             sim_env.reset(fen=obs.fen)
-            result = sim_env.step(ChessAction(move_uci=move))
+            step_obs = sim_env.step(ChessAction(move_uci=move))
 
             score = (
-                result.reward.value
-                if result.is_terminal
+                step_obs.reward
+                if step_obs.done
                 else _alpha_beta(
-                    result.observation,
+                    step_obs,
                     depth - 1,
                     alpha,
                     beta,
@@ -48,13 +48,13 @@ def _alpha_beta(
         best = float("inf")
         for move in obs.legal_moves:
             sim_env.reset(fen=obs.fen)
-            result = sim_env.step(ChessAction(move_uci=move))
+            step_obs = sim_env.step(ChessAction(move_uci=move))
 
             score = (
-                result.reward.value
-                if result.is_terminal
+                step_obs.reward
+                if step_obs.done
                 else _alpha_beta(
-                    result.observation,
+                    step_obs,
                     depth - 1,
                     alpha,
                     beta,
@@ -86,15 +86,13 @@ class MinimaxAgent(BaseAgent):
 
         print(f"evaluating {len(obs.legal_moves)} moves for board state: {obs.fen}")
         for move in obs.legal_moves:
-            # print(f"\nevaluating move {move} for position {obs.fen} for {obs.turn} turn")
-            
             step_result = sim_env.step(ChessAction(move_uci=move))
 
             score = (
-                step_result.reward.value # return the reward/evaluation from the step if terminal step
-                if step_result.is_terminal
+                step_result.reward # return the reward/evaluation from the step if terminal step
+                if step_result.done
                 else _alpha_beta(
-                    obs=step_result.observation, # state/obs from environment after action taken
+                    step_result, # state/obs from environment after action taken
                     depth=self.depth - 1,
                     alpha=-float("inf"),
                     beta=float("inf"),

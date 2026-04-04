@@ -1991,7 +1991,6 @@ openenv = [
     { name = "openenv-core" },
     { name = "pydantic" },
     { name = "uvicorn" },
-    { name = "websockets" },
 ]
 orchestration = [
     { name = "docker" },
@@ -2019,7 +2018,6 @@ requires-dist = [
     { name = "uvicorn", marker = "extra == 'all'", specifier = ">=0.24.0" },
     { name = "uvicorn", marker = "extra == 'openenv'", specifier = ">=0.24.0" },
     { name = "websockets", marker = "extra == 'all'", specifier = ">=12.0" },
-    { name = "websockets", marker = "extra == 'openenv'", specifier = ">=12.0" },
 ]
 provides-extras = ["chess", "openenv", "orchestration", "all", "dev"]
 
