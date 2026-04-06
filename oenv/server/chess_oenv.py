@@ -1,54 +1,49 @@
-from dataclasses import dataclass
+from openenv.core import Environment
 from chess_env.board import ChessBoard
 from chess_env.rules import compute_reward, game_outcome
-from envs.base_env import BaseEnv, BaseAction, BaseObservation, BaseState, BaseStepResult
+from oenv.model import ChessOpenEnvAction, ChessOpenEnvObservation, ChessOpenEnvState
 
-@dataclass
-class ChessAction(BaseAction):
-    move_uci: str
 
-@dataclass
-class ChessObservation(BaseObservation):
-    """ represents an observation (not a state) from the env """
-    fen         : str
-    legal_moves : list[str]
-    evaluation  : int
-    turn        : str
-    pass
-
-@dataclass
-class ChessState(BaseState):
-    ...
-
-@dataclass
-class ChessStepResult(BaseStepResult):
-    ...
-
-class ChessEnv(BaseEnv):
-    def __init__(self, fen: str = None):
+class ChessOpenEnv(Environment[ChessOpenEnvAction, ChessOpenEnvObservation, ChessOpenEnvState]):
+    def __init__(
+            self, 
+            fen: str = None,
+            transform = None, 
+            rubric = None
+        ):
         # create a chess environment
         self._board = ChessBoard(fen=fen)
         self._move_count = 0
         self._move_limit = 200
-
-    def reset(self, fen: str = None, **kwargs) -> ChessStepResult:
+    
+    def reset(
+            self, 
+            fen: str = None,
+            seed = None, 
+            episode_id = None, 
+            **kwargs
+        ) -> ChessOpenEnvObservation:
         if not self._board:
             raise ValueError("no active ChessEnv found, create one first")
         
         self._board = ChessBoard(fen=fen)
         self._move_count = 0
-        observation = self._observe(0, False, None)
-        return ChessStepResult(
-            observation=observation,
-            reward=0.0,
-            done=False
-        )
+        return self._observe(0, False, {})
     
-    def step(self, action: ChessAction, **kwargs) -> BaseStepResult:
+    @property
+    def state(self) -> ChessOpenEnvState:
+        return super().state
+    
+    def step(
+            self, 
+            action: ChessOpenEnvAction, 
+            timeout_s = None, 
+            **kwargs
+        ) -> ChessOpenEnvObservation:
         """Apply action, advance the world, return the result."""
         if self._board is None:
             raise RuntimeError("Call reset() before step().")
- 
+        
         acting_color = self._board.turn
         board_state = self._board.push_move(action.move_uci)
         self._move_count += 1
@@ -60,20 +55,12 @@ class ChessEnv(BaseEnv):
                 "move_count": self._move_count,
                 "acting_color": acting_color,
             }
-
+        
         observation = self._observe(reward_value=reward_value, done=is_terminal, meta_info=meta_info)
-        return ChessStepResult(
-            observation=observation,
-            reward=reward_value,
-            done=is_terminal
-        )
+        return observation
     
-    @property
-    def state(self):
-        return super().state
-    
-    def _observe(self, reward_value, done: bool, meta_info: dict | None) -> ChessObservation:
-        return ChessObservation(
+    def _observe(self, reward_value, done: bool, meta_info: dict) -> ChessOpenEnvObservation:
+        return ChessOpenEnvObservation(
             fen=self._board.fen,
             reward=reward_value,
             legal_moves=self._board.legal_moves,
