@@ -28,11 +28,24 @@ class ChessOpenEnv(Environment[ChessOpenEnvAction, ChessOpenEnvObservation, Ches
         
         self._board = ChessBoard(fen=fen)
         self._move_count = 0
-        return self._observe(0, False, {})
+        return self._observe(
+            reward_value=0.0,
+            done=False,
+            meta_info={
+                "outcome": "in progress",
+                "move_count": self._move_count,
+                "acting_color": None,
+            },
+        )
     
     @property
     def state(self) -> ChessOpenEnvState:
-        return super().state
+        return ChessOpenEnvState(
+            episode_id=getattr(self, "_episode_id", None),
+            step_count=self._move_count,
+            fen=self._board.fen,
+            turn=self._board.turn,
+        )
     
     def step(
             self, 
@@ -50,8 +63,12 @@ class ChessOpenEnv(Environment[ChessOpenEnvAction, ChessOpenEnvObservation, Ches
  
         reward_value = compute_reward(self._board, board_state, acting_color)
         is_terminal = board_state.is_game_over or self._move_count >= self._move_limit
+        if is_terminal and not board_state.is_game_over:
+            outcome = "Draw by move limit"
+        else:
+            outcome = game_outcome(self._board) if is_terminal else "in progress"
         meta_info={
-                "outcome": game_outcome(self._board) if is_terminal else "in progress",
+                "outcome": outcome,
                 "move_count": self._move_count,
                 "acting_color": acting_color,
             }

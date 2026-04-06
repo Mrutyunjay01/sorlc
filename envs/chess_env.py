@@ -18,7 +18,9 @@ class ChessObservation(BaseObservation):
 
 @dataclass
 class ChessState(BaseState):
-    ...
+    step_count: int
+    fen: str
+    turn: str
 
 @dataclass
 class ChessStepResult(BaseStepResult):
@@ -37,7 +39,15 @@ class ChessEnv(BaseEnv):
         
         self._board = ChessBoard(fen=fen)
         self._move_count = 0
-        observation = self._observe(0, False, None)
+        observation = self._observe(
+            reward_value=0.0,
+            done=False,
+            meta_info={
+                "outcome": "in progress",
+                "move_count": self._move_count,
+                "acting_color": None,
+            },
+        )
         return ChessStepResult(
             observation=observation,
             reward=0.0,
@@ -55,8 +65,12 @@ class ChessEnv(BaseEnv):
  
         reward_value = compute_reward(self._board, board_state, acting_color)
         is_terminal = board_state.is_game_over or self._move_count >= self._move_limit
+        if is_terminal and not board_state.is_game_over:
+            outcome = "Draw by move limit"
+        else:
+            outcome = game_outcome(self._board) if is_terminal else "in progress"
         meta_info={
-                "outcome": game_outcome(self._board) if is_terminal else "in progress",
+                "outcome": outcome,
                 "move_count": self._move_count,
                 "acting_color": acting_color,
             }
@@ -70,7 +84,11 @@ class ChessEnv(BaseEnv):
     
     @property
     def state(self):
-        return super().state
+        return ChessState(
+            step_count=self._move_count,
+            fen=self._board.fen,
+            turn=self._board.turn,
+        )
     
     def _observe(self, reward_value, done: bool, meta_info: dict | None) -> ChessObservation:
         return ChessObservation(

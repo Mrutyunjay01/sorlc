@@ -33,6 +33,6 @@ class ChessOpenEnvClient(EnvClient[ChessOpenEnvAction, ChessOpenEnvObservation, 
     
     def _parse_state(self, payload: Dict[str, Any]) -> ChessOpenEnvState:
         return ChessOpenEnvState(
-            episode_id=payload.get("episode_id", 0),
+            episode_id=payload.get("episode_id"),
             step_count=payload.get("step_count", 0)
         )

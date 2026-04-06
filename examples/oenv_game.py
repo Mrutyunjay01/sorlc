@@ -27,10 +27,10 @@ async def play_game(
             action = agent.select_action(obs)
             step_result = await env.step(action=action)
             moves.append(action.move_uci)
+            obs = step_result.observation
 
             if step_result.done:
                 break
-            obs = step_result.observation
 
         duration = time.time() - start
         outcome_str = obs.meta_info["outcome"]
@@ -67,7 +67,7 @@ async def run_match(
 
     for game_num in range(1, n_games + 1):
         if n_games > 1:
-            print(f"  Game {game_num}/{n_games}...", end=" ", flush=True)
+            print(f"  Game {game_num}/{n_games}...\n", end=" ", flush=True)
 
         result = await play_game(white, black, verbose=per_game_verbose)
         tally[result["outcome"]] += 1

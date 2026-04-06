@@ -11,12 +11,11 @@ def compute_reward(board: ChessBoard, board_state: BoardState, acting_color: str
         return REWARD_STEP
 
     if board_state.is_checkmate:
-        # The player who just moved delivered checkmate — they win
+        # Reward is from white's perspective (consistent with evaluation sign).
         return REWARD_CHECKMATE if acting_color == "white" else REWARD_LOSS
 
     if board_state.is_stalemate:
-        # Penalise the stalemating side — strategic error
-        return REWARD_LOSS if acting_color == "white" else REWARD_CHECKMATE
+        return REWARD_DRAW
 
     return REWARD_DRAW
 

@@ -13,8 +13,10 @@ def _alpha_beta(
     beta: float,
     maximising: bool,
 ) -> float:
-    # if terminal state, evaluate
-    if depth == 0:
+    # stop at frontier or terminal/no-move states
+    if depth == 0 or obs.done or not obs.legal_moves:
+        if obs.done:
+            return obs.reward
         return obs.evaluation
 
     # Fresh sim_env per call — no shared mutable state across recursion levels
@@ -77,6 +79,11 @@ class MinimaxAgent(BaseAgent):
         self.depth = depth
 
     def select_action(self, obs: ChessObservation) -> ChessAction:
+        if obs.done:
+            raise ValueError("cannot select action from terminal observation")
+        if not obs.legal_moves:
+            raise ValueError("cannot select action when no legal moves are available")
+
         maximising = (obs.turn == "white")
         best_move  = None
         best_score = -float("inf") if maximising else float("inf")
@@ -110,6 +117,8 @@ class MinimaxAgent(BaseAgent):
 
             # print(f"best move {best_move} with score {best_score}")
 
+        if best_move is None:
+            raise RuntimeError("failed to choose a move from legal move list")
         return ChessAction(move_uci=best_move)
 
     @property

@@ -12,4 +12,7 @@ class ChessOpenEnvObservation(Observation):
     meta_info   : dict
     
 class ChessOpenEnvState(State):
-    pass
+    episode_id: str | None = None
+    step_count: int = 0
+    fen: str = ""
+    turn: str = "white"
