@@ -1,10 +1,6 @@
 from agent.base_agent import BaseAgent
 from envs.chess_env import ChessEnv, ChessObservation, ChessAction
 
-# Sentinel scores — same scale as material_balance (centipawns)
-_WIN  =  100_000
-_LOSS = -100_000
-
 
 def _alpha_beta(
     obs: ChessObservation,
@@ -13,11 +9,9 @@ def _alpha_beta(
     beta: float,
     maximising: bool,
 ) -> float:
-    # stop at frontier or terminal/no-move states
+    # Cumulative reward search from current node onward.
     if depth == 0 or obs.done or not obs.legal_moves:
-        if obs.done:
-            return obs.reward
-        return obs.evaluation
+        return 0.0
 
     # Fresh sim_env per call — no shared mutable state across recursion levels
     sim_env = ChessEnv()
@@ -28,17 +22,15 @@ def _alpha_beta(
             _ = sim_env.reset(fen=obs.fen)
             step_result = sim_env.step(ChessAction(move_uci=move))
 
-            score = (
-                step_result.reward
-                if step_result.done
-                else _alpha_beta(
+            score = step_result.reward
+            if not step_result.done:
+                score += _alpha_beta(
                     step_result.observation,
                     depth - 1,
                     alpha,
                     beta,
                     False,
                 )
-            )
 
             best  = max(best, score)
             alpha = max(alpha, best)
@@ -52,17 +44,15 @@ def _alpha_beta(
             _ = sim_env.reset(fen=obs.fen)
             step_result = sim_env.step(ChessAction(move_uci=move))
 
-            score = (
-                step_result.reward
-                if step_result.done
-                else _alpha_beta(
+            score = step_result.reward
+            if not step_result.done:
+                score += _alpha_beta(
                     step_result.observation,
                     depth - 1,
                     alpha,
                     beta,
                     True,
                 )
-            )
 
             best = min(best, score)
             beta = min(beta, best)
@@ -95,17 +85,15 @@ class MinimaxAgent(BaseAgent):
         for move in obs.legal_moves:
             step_result = sim_env.step(ChessAction(move_uci=move))
 
-            score = (
-                step_result.reward # return the reward/evaluation from the step if terminal step
-                if step_result.done
-                else _alpha_beta(
-                    step_result.observation, # state/obs from environment after action taken
+            score = step_result.reward
+            if not step_result.done:
+                score += _alpha_beta(
+                    step_result.observation,
                     depth=self.depth - 1,
                     alpha=-float("inf"),
                     beta=float("inf"),
                     maximising=not maximising,
-                ) # continue with next step
-            )
+                )
 
             if (maximising and score > best_score) or \
                (not maximising and score < best_score):

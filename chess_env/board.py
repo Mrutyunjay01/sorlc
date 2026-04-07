@@ -34,6 +34,11 @@ class ChessBoard:
 
     # some accessors/getters for utility
     @property
+    def python_board(self) -> chess.Board:
+        """Expose underlying python-chess board for evaluators."""
+        return self._board
+
+    @property
     def fen(self) -> str:
         """
         return complete board state as fen string

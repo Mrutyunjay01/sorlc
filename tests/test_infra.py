@@ -1,7 +1,8 @@
 import pytest
-
 from agent.minmax_agent import MinimaxAgent
 from agent.random_agent import RandomAgent
+from agent.human_agent import HumanAgent
+from chess_env.evaluation import evaluate_board
 from envs.chess_env import ChessAction, ChessEnv
 
 
@@ -13,6 +14,17 @@ def test_step_propagates_reward_and_observation_reward():
 
     assert step.reward == step.observation.reward
     assert step.done == step.observation.done
+
+
+def test_non_terminal_reward_is_eval_delta():
+    env = ChessEnv()
+    step = env.reset()
+    prev_eval = evaluate_board(env._board)
+    action = ChessAction(move_uci="e2e4")
+    step = env.step(action)
+    next_eval = evaluate_board(env._board)
+    assert step.done is False
+    assert step.reward == pytest.approx(next_eval - prev_eval, rel=1e-9, abs=1e-9)
 
 
 def test_move_limit_terminal_has_terminal_outcome():
@@ -62,6 +74,13 @@ def test_minimax_finds_forced_mate_in_one():
     assert move.move_uci == "d8h4"
 
 
+def test_minimax_uses_reward_delta_signal():
+    env = ChessEnv()
+    obs = env.reset().observation
+    move = MinimaxAgent(depth=1).select_action(obs)
+    assert move.move_uci == "e2e4"
+
+
 def test_local_openenv_semantics_are_aligned_without_server():
     openenv_core = pytest.importorskip("openenv.core")
     assert openenv_core is not None
@@ -74,7 +93,7 @@ def test_local_openenv_semantics_are_aligned_without_server():
     local_step = local_env.step(action)
 
     oenv = ChessOpenEnv()
-    oenv_reset = oenv.reset()
+    _ = oenv.reset()
     oenv_step_obs = oenv.step(action)
 
     assert local_step.observation.fen == oenv_step_obs.fen
@@ -106,3 +125,8 @@ def test_openenv_client_parse_result_keeps_reward_done_evaluation():
     assert step_result.reward == 3.5
     assert step_result.done is False
     assert step_result.observation.evaluation == 12
+
+
+def test_human_agent_name_property():
+    agent = HumanAgent()
+    assert "Human" in agent.name

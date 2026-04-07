@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from chess_env.board import ChessBoard
+from chess_env.evaluation import evaluate_board
 from chess_env.rules import compute_reward, game_outcome
 from envs.base_env import BaseEnv, BaseAction, BaseObservation, BaseState, BaseStepResult
 
@@ -60,10 +61,16 @@ class ChessEnv(BaseEnv):
             raise RuntimeError("Call reset() before step().")
  
         acting_color = self._board.turn
+        previous_evaluation = evaluate_board(self._board)
         board_state = self._board.push_move(action.move_uci)
         self._move_count += 1
  
-        reward_value = compute_reward(self._board, board_state, acting_color)
+        reward_value = compute_reward(
+            self._board,
+            board_state,
+            acting_color,
+            previous_evaluation=previous_evaluation,
+        )
         is_terminal = board_state.is_game_over or self._move_count >= self._move_limit
         if is_terminal and not board_state.is_game_over:
             outcome = "Draw by move limit"
@@ -95,7 +102,7 @@ class ChessEnv(BaseEnv):
             fen=self._board.fen,
             reward=reward_value,
             legal_moves=self._board.legal_moves,
-            evaluation=self._board.material_balance,   # centipawns, not material_balance
+            evaluation=evaluate_board(self._board),
             turn=self._board.turn,
             done=done,
             meta_info=meta_info
