@@ -1,10 +1,6 @@
 from agent.base_agent import BaseAgent
 from envs.chess_env import ChessEnv, ChessObservation, ChessAction
 
-# Sentinel scores — same scale as material_balance (centipawns)
-_WIN  =  100_000
-_LOSS = -100_000
-
 
 def _alpha_beta(
     obs: ChessObservation,
@@ -13,9 +9,9 @@ def _alpha_beta(
     beta: float,
     maximising: bool,
 ) -> float:
-    # if terminal state, evaluate
-    if depth == 0:
-        return obs.evaluation
+    # Cumulative reward search from current node onward.
+    if depth == 0 or obs.done or not obs.legal_moves:
+        return obs.evaluation # return evaluation
 
     # Fresh sim_env per call — no shared mutable state across recursion levels
     sim_env = ChessEnv()
@@ -23,20 +19,18 @@ def _alpha_beta(
     if maximising:
         best = -float("inf")
         for move in obs.legal_moves:
-            sim_env.reset(fen=obs.fen)
-            step_obs = sim_env.step(ChessAction(move_uci=move))
+            _ = sim_env.reset(fen=obs.fen)
+            step_result = sim_env.step(ChessAction(move_uci=move))
 
-            score = (
-                step_obs.reward
-                if step_obs.done
-                else _alpha_beta(
-                    step_obs,
+            score = step_result.reward
+            if not step_result.done:
+                score += _alpha_beta(
+                    step_result.observation,
                     depth - 1,
                     alpha,
                     beta,
                     False,
                 )
-            )
 
             best  = max(best, score)
             alpha = max(alpha, best)
@@ -47,20 +41,18 @@ def _alpha_beta(
     else:
         best = float("inf")
         for move in obs.legal_moves:
-            sim_env.reset(fen=obs.fen)
-            step_obs = sim_env.step(ChessAction(move_uci=move))
+            _ = sim_env.reset(fen=obs.fen)
+            step_result = sim_env.step(ChessAction(move_uci=move))
 
-            score = (
-                step_obs.reward
-                if step_obs.done
-                else _alpha_beta(
-                    step_obs,
+            score = step_result.reward
+            if not step_result.done:
+                score += _alpha_beta(
+                    step_result.observation,
                     depth - 1,
                     alpha,
                     beta,
                     True,
                 )
-            )
 
             best = min(best, score)
             beta = min(beta, best)
@@ -77,6 +69,11 @@ class MinimaxAgent(BaseAgent):
         self.depth = depth
 
     def select_action(self, obs: ChessObservation) -> ChessAction:
+        if obs.done:
+            raise ValueError("cannot select action from terminal observation")
+        if not obs.legal_moves:
+            raise ValueError("cannot select action when no legal moves are available")
+
         maximising = (obs.turn == "white")
         best_move  = None
         best_score = -float("inf") if maximising else float("inf")
@@ -88,17 +85,15 @@ class MinimaxAgent(BaseAgent):
         for move in obs.legal_moves:
             step_result = sim_env.step(ChessAction(move_uci=move))
 
-            score = (
-                step_result.reward # return the reward/evaluation from the step if terminal step
-                if step_result.done
-                else _alpha_beta(
-                    step_result, # state/obs from environment after action taken
+            score = step_result.reward
+            if not step_result.done:
+                score += _alpha_beta(
+                    step_result.observation,
                     depth=self.depth - 1,
                     alpha=-float("inf"),
                     beta=float("inf"),
                     maximising=not maximising,
-                ) # continue with next step
-            )
+                )
 
             if (maximising and score > best_score) or \
                (not maximising and score < best_score):
@@ -110,6 +105,8 @@ class MinimaxAgent(BaseAgent):
 
             # print(f"best move {best_move} with score {best_score}")
 
+        if best_move is None:
+            raise RuntimeError("failed to choose a move from legal move list")
         return ChessAction(move_uci=best_move)
 
     @property

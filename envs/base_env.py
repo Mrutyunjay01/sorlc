@@ -11,6 +11,12 @@ class BaseObservation(ABC):
     meta_info: dict
     pass
 
+@dataclass
+class BaseStepResult(ABC):
+    observation: BaseObservation
+    reward:      int | float
+    done:        bool
+
 class BaseState(ABC):
     step_count: int
 

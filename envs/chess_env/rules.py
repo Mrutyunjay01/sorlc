@@ -1,4 +1,5 @@
-from chess_env.board import ChessBoard, BoardState
+from .board import ChessBoard, BoardState
+from .evaluation import evaluate_board
 
 REWARD_CHECKMATE =  100_000   # winning is the best possible outcome
 REWARD_LOSS      = -100_000   # losing is the worst
@@ -6,17 +7,24 @@ REWARD_DRAW      =       0    # draw is neutral
 REWARD_STEP      =       0    # non-terminal moves carry no reward
 
 
-def compute_reward(board: ChessBoard, board_state: BoardState, acting_color: str) -> float:
+def compute_reward(
+    board: ChessBoard,
+    board_state: BoardState,
+    acting_color: str,
+    previous_evaluation: float | None = None,
+) -> float:
     if not board_state.is_game_over:
-        return REWARD_STEP
+        if previous_evaluation is None:
+            return REWARD_STEP
+        # Dense shaping from white-perspective evaluation delta.
+        return evaluate_board(board) - previous_evaluation
 
     if board_state.is_checkmate:
-        # The player who just moved delivered checkmate — they win
+        # Reward is from white's perspective (consistent with evaluation sign).
         return REWARD_CHECKMATE if acting_color == "white" else REWARD_LOSS
 
     if board_state.is_stalemate:
-        # Penalise the stalemating side — strategic error
-        return REWARD_LOSS if acting_color == "white" else REWARD_CHECKMATE
+        return REWARD_DRAW
 
     return REWARD_DRAW
 

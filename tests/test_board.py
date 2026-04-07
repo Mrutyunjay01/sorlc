@@ -1,7 +1,5 @@
 import pytest
-from chess_env.board import ChessBoard
-from chess_env.rules import compute_reward, REWARD_WIN
-from chess_env.renderer import print_board, render_move_history
+from envs.chess_env import ChessBoard, render_move_history, print_board, compute_reward, REWARD_LOSS
 
 def test_initial_state():
     board = ChessBoard()
@@ -61,13 +59,11 @@ def test_fool_mate():
     board = ChessBoard()
 
     moves = ["f2f3", "e7e5", "g2g4", "d8h4"]
-    acting_colors = ["white", "black", "white", "black"]
-
-    for i, (move, color) in enumerate(zip(moves, acting_colors)):
+    for i, move in enumerate(moves):
         board_state = board.push_move(move)
 
         if i == len(moves) - 1:
-            reward = compute_reward(board_state, color)
+            reward = compute_reward(board, board_state, acting_color="black")
 
             assert board_state.is_checkmate is True
-            assert reward == REWARD_WIN
+            assert reward == REWARD_LOSS

@@ -12,3 +12,7 @@ class BaseAgent(ABC):
     @property
     def name(self) -> str:
         return self.__class__.__name__
+
+    def on_transition(self, observation, action, step_result) -> None:
+        """Optional hook for online-learning agents."""
+        return None
