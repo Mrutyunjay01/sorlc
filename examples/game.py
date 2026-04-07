@@ -6,13 +6,12 @@ from agent.minmax_agent import MinimaxAgent
 from agent.human_agent import HumanAgent
 from envs.chess_env import ChessEnv
 
-
 def _build_ui(enabled: bool):
     if not enabled:
         return None
     try:
         from ui.chess_tk import ChessTkUI
-        return ChessTkUI(title="Local Chess Environment")
+        return ChessTkUI(title="Sorlc")
     except Exception as exc:
         print(f"UI unavailable ({exc}), continuing without UI.")
         return None

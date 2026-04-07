@@ -2,8 +2,7 @@ import pytest
 from agent.minmax_agent import MinimaxAgent
 from agent.random_agent import RandomAgent
 from agent.human_agent import HumanAgent
-from chess_env.evaluation import evaluate_board
-from envs.chess_env import ChessAction, ChessEnv
+from envs.chess_env import ChessEnv, ChessAction, evaluate_board
 
 
 def test_step_propagates_reward_and_observation_reward():

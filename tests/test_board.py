@@ -1,7 +1,5 @@
 import pytest
-from chess_env.board import ChessBoard
-from chess_env.rules import compute_reward, REWARD_LOSS
-from chess_env.renderer import print_board, render_move_history
+from envs.chess_env import ChessBoard, render_move_history, print_board, compute_reward, REWARD_LOSS
 
 def test_initial_state():
     board = ChessBoard()

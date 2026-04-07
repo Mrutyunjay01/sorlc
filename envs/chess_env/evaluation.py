@@ -1,7 +1,6 @@
-from dataclasses import dataclass
 import chess
-from chess_env.board import ChessBoard
-
+from dataclasses import dataclass
+from .board import ChessBoard
 
 @dataclass
 class EvalWeights:

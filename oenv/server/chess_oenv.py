@@ -1,7 +1,5 @@
 from openenv.core import Environment
-from chess_env.board import ChessBoard
-from chess_env.evaluation import evaluate_board
-from chess_env.rules import compute_reward, game_outcome
+from envs.chess_env import ChessBoard, compute_reward, evaluate_board, game_outcome
 from oenv.model import ChessOpenEnvAction, ChessOpenEnvObservation, ChessOpenEnvState
 
 

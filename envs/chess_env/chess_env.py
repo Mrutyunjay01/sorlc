@@ -1,8 +1,7 @@
 from dataclasses import dataclass
-from chess_env.board import ChessBoard
-from chess_env.evaluation import evaluate_board
-from chess_env.rules import compute_reward, game_outcome
 from envs.base_env import BaseEnv, BaseAction, BaseObservation, BaseState, BaseStepResult
+from .board import ChessBoard
+from .rules import evaluate_board, game_outcome, compute_reward
 
 @dataclass
 class ChessAction(BaseAction):

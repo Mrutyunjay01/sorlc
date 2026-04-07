@@ -1,5 +1,5 @@
-from chess_env.board import ChessBoard, BoardState
-from chess_env.evaluation import evaluate_board
+from .board import ChessBoard, BoardState
+from .evaluation import evaluate_board
 
 REWARD_CHECKMATE =  100_000   # winning is the best possible outcome
 REWARD_LOSS      = -100_000   # losing is the worst
