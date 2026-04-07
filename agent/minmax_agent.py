@@ -11,7 +11,7 @@ def _alpha_beta(
 ) -> float:
     # Cumulative reward search from current node onward.
     if depth == 0 or obs.done or not obs.legal_moves:
-        return 0.0
+        return obs.evaluation # return evaluation
 
     # Fresh sim_env per call — no shared mutable state across recursion levels
     sim_env = ChessEnv()
